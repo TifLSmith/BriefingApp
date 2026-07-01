@@ -75,10 +75,30 @@ export const deleteMyAccount = createServerFn({ method: "POST" })
     // supabaseAdmin (service role) is loaded dynamically for privileged ops only.
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
+    // Look up the user's email from their auth record (identified by the
+    // server-verified userId, never a client-supplied value). Needed because
+    // waitlist_signups is keyed by email, not user_id, so it does not CASCADE.
+    const { data: authUser, error: lookupErr } =
+      await supabaseAdmin.auth.admin.getUserById(userId);
+    if (lookupErr) {
+      console.error(`Could not look up user for waitlist cleanup: ${lookupErr.message}`);
+    }
+    const email = authUser?.user?.email ?? null;
+
     // Remove the user's own rows first (service role bypasses RLS).
     for (const table of ["saved_briefings", "subscriptions", "profiles"] as const) {
       const { error } = await supabaseAdmin.from(table).delete().eq("user_id", userId);
       if (error) throw new Error(`Failed to delete ${table}: ${error.message}`);
+    }
+
+    // Remove any waitlist signup(s) matching this user's email. Non-fatal:
+    // a leftover marketing-list row must not block account deletion.
+    if (email) {
+      const { error: wlErr } = await supabaseAdmin
+        .from("waitlist_signups")
+        .delete()
+        .eq("email", email);
+      if (wlErr) console.error(`Failed to delete waitlist signup: ${wlErr.message}`);
     }
 
     // Finally remove the auth user itself.
