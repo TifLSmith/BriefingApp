@@ -10,6 +10,11 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+
+# Package manager: this project is pinned to npm (see package.json
+# "packageManager"). Ignore bun's lockfile so it can't reintroduce a
+# dual-lockfile conflict on Cloudflare builds.
+bun.lock
 .output
 .vinxi
 .tanstack/**
