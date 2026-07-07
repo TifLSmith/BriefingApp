@@ -5,12 +5,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Header, Footer } from "@/components/SiteChrome";
-import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { PricingCards } from "@/components/PricingCards";
-import { useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { StripeEmbeddedCheckout } from "@/components/StripeEmbeddedCheckout";
 import { useAuth } from "@/hooks/useAuth";
 
 export const Route = createFileRoute("/")({
@@ -44,22 +39,9 @@ const FAQS = [
 
 function Landing() {
   const { user } = useAuth();
-  const navigate = useNavigate();
-  const [open, setOpen] = useState(false);
-  const [priceId, setPriceId] = useState<"pro_monthly" | "pro_yearly">("pro_monthly");
-
-  function onSubscribe(p: "pro_monthly" | "pro_yearly") {
-    if (!user) {
-      navigate({ to: "/auth" });
-      return;
-    }
-    setPriceId(p);
-    setOpen(true);
-  }
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-hero">
-      <PaymentTestModeBanner />
       <Header />
 
       <main className="flex-1">
@@ -146,7 +128,7 @@ function Landing() {
             <h2 className="text-3xl font-bold mb-2">Free to start. Pro when you need more.</h2>
             <p className="text-muted-foreground">No credit card to start.</p>
           </div>
-          <PricingCards onSubscribe={onSubscribe} />
+          <PricingCards />
         </section>
 
         {/* FAQ */}
@@ -180,20 +162,6 @@ function Landing() {
       </main>
 
       <Footer />
-
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-xl">
-          <DialogHeader><DialogTitle>Subscribe to Pro</DialogTitle></DialogHeader>
-          {user && (
-            <StripeEmbeddedCheckout
-              priceId={priceId}
-              customerEmail={user.email}
-              userId={user.id}
-              returnUrl={`${window.location.origin}/briefing?checkout=success`}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

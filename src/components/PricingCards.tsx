@@ -21,11 +21,7 @@ const proPoints = [
   "Priority support",
 ];
 
-export function PricingCards({
-  onSubscribe,
-}: {
-  onSubscribe?: (priceId: "pro_monthly" | "pro_yearly") => void;
-}) {
+export function PricingCards() {
   const [annual, setAnnual] = useState(false);
   const { user } = useAuth();
   const { data: sub } = useSubscription(!!user);
@@ -99,12 +95,7 @@ export function PricingCards({
               Manage your subscription on the web.
             </div>
           ) : (
-            <Button
-              className="w-full bg-gradient-accent text-primary-foreground shadow-glow"
-              onClick={() => onSubscribe?.(annual ? "pro_yearly" : "pro_monthly")}
-            >
-              {user ? "Upgrade to Pro" : "Start free → Upgrade"}
-            </Button>
+            <Button disabled className="w-full">Pro — coming soon</Button>
           )}
         </div>
       </div>

@@ -68,9 +68,22 @@ Moving off Lovable, in this order. Do NOT skip ahead or combine phases without a
 6. **Only then** cancel Lovable. Not before.
 
 ## Known cleanup items
-- **Stripe was removed** from this app (switching to Apple/Google in-app billing later).
-  Watch for and report leftover Stripe references — dead imports, unused env vars,
-  orphaned webhook routes — that could break the build. Report before fixing.
+- **Stripe is fully removed from the source as of this change** — the three npm
+  packages (`stripe`, `@stripe/react-stripe-js`, `@stripe/stripe-js`), all six Stripe
+  source files (`lib/stripe.ts`, `lib/stripe.server.ts`, `utils/payments.functions.ts`,
+  `components/StripeEmbeddedCheckout.tsx`, `components/PaymentTestModeBanner.tsx`, the
+  `routes/api/public/payments/webhook.ts` route), and every import/usage in routes and
+  hooks are gone. The pricing cards now show a disabled "Pro — coming soon" button and
+  Settings shows a "coming soon" note instead of a billing portal.
+- **The subscription / Pro-gating READ layer was intentionally kept.** The `subscriptions`
+  table, `useSubscription`, and the `userIsPro` gating in `feed.functions.ts` still work;
+  they're just no longer writable until in-app billing lands. Callers now pass the literal
+  `environment: "live"` where they used to call the removed `resolvePaymentsEnvironment()`
+  (so `environment="sandbox"` subscription rows, if any, are no longer read).
+- **Still to clean up server-side (out of scope here, backend on Lovable):** the Lovable
+  Stripe connector, the `STRIPE_*` / `PAYMENTS_*` / `VITE_PAYMENTS_CLIENT_TOKEN` secrets,
+  and the leftover `stripe_customer_id` / `stripe_subscription_id` columns on the
+  `subscriptions` table (still present in generated `integrations/supabase/types.ts`).
 - In-app billing (StoreKit + Google Play Billing) is NOT built yet. There is currently
   no working payment path. That's expected; don't try to "fix" it unprompted.
 

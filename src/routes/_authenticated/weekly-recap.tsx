@@ -2,7 +2,6 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { getWeeklyRecaps } from "@/lib/feed.functions";
-import { resolvePaymentsEnvironment } from "@/lib/stripe";
 import { Crown, Loader2, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -15,7 +14,7 @@ function WeeklyRecap() {
   const fn = useServerFn(getWeeklyRecaps);
   const { data, isLoading } = useQuery({
     queryKey: ["recaps"],
-    queryFn: () => fn({ data: { environment: resolvePaymentsEnvironment() } }),
+    queryFn: () => fn({ data: { environment: "live" } }),
   });
 
   return (

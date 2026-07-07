@@ -5,7 +5,6 @@ import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { getMyProfile } from "@/lib/profile.functions";
 import { Header, Footer } from "@/components/SiteChrome";
-import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -44,7 +43,6 @@ function AuthLayout() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-hero">
-      <PaymentTestModeBanner />
       <Header />
       <main className="flex-1">
         <Outlet />

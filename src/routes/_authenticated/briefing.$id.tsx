@@ -2,7 +2,6 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { getBriefingById } from "@/lib/feed.functions";
-import { resolvePaymentsEnvironment } from "@/lib/stripe";
 import { Button } from "@/components/ui/button";
 import {
   ArrowLeft, AlertTriangle, Clock, ExternalLink, Lock, ListChecks, ShieldAlert, Target, KeyRound, Footprints, Sparkles, Loader2,
@@ -39,7 +38,7 @@ function StoryDetail() {
   const fn = useServerFn(getBriefingById);
   const { data, isLoading, error } = useQuery({
     queryKey: ["briefing", id],
-    queryFn: () => fn({ data: { id, environment: resolvePaymentsEnvironment() } }),
+    queryFn: () => fn({ data: { id, environment: "live" } }),
   });
 
   if (isLoading) return <div className="grid place-items-center py-20"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;

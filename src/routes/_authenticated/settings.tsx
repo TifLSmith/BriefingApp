@@ -4,14 +4,12 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import { getMyProfile, updateMyProfile, deleteMyAccount } from "@/lib/profile.functions";
 import { useSubscription } from "@/hooks/useSubscription";
-import { createPortalSession } from "@/utils/payments.functions";
-import { getStripeEnvironment } from "@/lib/stripe";
 import { useIsNativeApp } from "@/lib/platform";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, CreditCard, LogOut, Crown, Trash2 } from "lucide-react";
+import { Loader2, LogOut, Crown, Trash2 } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -36,7 +34,6 @@ function Settings() {
   const qc = useQueryClient();
   const getProfile = useServerFn(getMyProfile);
   const updateProfile = useServerFn(updateMyProfile);
-  const portal = useServerFn(createPortalSession);
   const del = useServerFn(deleteMyAccount);
   const native = useIsNativeApp();
 
@@ -58,14 +55,6 @@ function Settings() {
   const save = useMutation({
     mutationFn: () => updateProfile({ data: { display_name: displayName, industry, email_digest_enabled: digest } }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["profile"] }),
-  });
-
-  const openPortal = useMutation({
-    mutationFn: () => portal({ data: { environment: getStripeEnvironment(), returnUrl: window.location.href } }),
-    onSuccess: (r) => {
-      if ("error" in r) throw new Error(r.error);
-      window.open(r.url, "_blank");
-    },
   });
 
   const deleteAccount = useMutation({
@@ -115,13 +104,7 @@ function Settings() {
             {(sub.subscription as any).current_period_end && (
               <p>Renews / ends: <span className="text-foreground">{new Date((sub.subscription as any).current_period_end).toLocaleDateString()}</span></p>
             )}
-            {native ? (
-              <p className="mt-3 text-muted-foreground">Manage your subscription on the web.</p>
-            ) : (
-              <Button onClick={() => openPortal.mutate()} disabled={openPortal.isPending} variant="outline" className="mt-3">
-                <CreditCard className="h-4 w-4 mr-1" /> Manage billing
-              </Button>
-            )}
+            <p className="mt-3 text-muted-foreground">Subscription management is coming soon.</p>
           </div>
         ) : (
           <div>

@@ -3,7 +3,6 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { getFeed } from "@/lib/feed.functions";
-import { resolvePaymentsEnvironment } from "@/lib/stripe";
 import { BriefingCard } from "@/components/BriefingCard";
 import { Button } from "@/components/ui/button";
 import { Crown, Filter, Loader2 } from "lucide-react";
@@ -23,7 +22,7 @@ function BriefingFeed() {
 
   const { data, isLoading } = useQuery({
     queryKey: ["feed", industry, category],
-    queryFn: () => fn({ data: { environment: resolvePaymentsEnvironment(), industry, category } }),
+    queryFn: () => fn({ data: { environment: "live", industry, category } }),
   });
 
   return (

@@ -22,7 +22,6 @@ import { Route as AuthenticatedSavedRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedBriefingRouteImport } from './routes/_authenticated/briefing'
 import { Route as AuthenticatedBriefingIdRouteImport } from './routes/_authenticated/briefing.$id'
-import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 import { Route as ApiPublicHooksWeeklyRecapRouteImport } from './routes/api/public/hooks/weekly-recap'
 import { Route as ApiPublicHooksIngestBriefingsRouteImport } from './routes/api/public/hooks/ingest-briefings'
 
@@ -91,12 +90,6 @@ const AuthenticatedBriefingIdRoute = AuthenticatedBriefingIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => AuthenticatedBriefingRoute,
 } as any)
-const ApiPublicPaymentsWebhookRoute =
-  ApiPublicPaymentsWebhookRouteImport.update({
-    id: '/api/public/payments/webhook',
-    path: '/api/public/payments/webhook',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 const ApiPublicHooksWeeklyRecapRoute =
   ApiPublicHooksWeeklyRecapRouteImport.update({
     id: '/api/public/hooks/weekly-recap',
@@ -125,7 +118,6 @@ export interface FileRoutesByFullPath {
   '/briefing/$id': typeof AuthenticatedBriefingIdRoute
   '/api/public/hooks/ingest-briefings': typeof ApiPublicHooksIngestBriefingsRoute
   '/api/public/hooks/weekly-recap': typeof ApiPublicHooksWeeklyRecapRoute
-  '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -142,7 +134,6 @@ export interface FileRoutesByTo {
   '/briefing/$id': typeof AuthenticatedBriefingIdRoute
   '/api/public/hooks/ingest-briefings': typeof ApiPublicHooksIngestBriefingsRoute
   '/api/public/hooks/weekly-recap': typeof ApiPublicHooksWeeklyRecapRoute
-  '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -161,7 +152,6 @@ export interface FileRoutesById {
   '/_authenticated/briefing/$id': typeof AuthenticatedBriefingIdRoute
   '/api/public/hooks/ingest-briefings': typeof ApiPublicHooksIngestBriefingsRoute
   '/api/public/hooks/weekly-recap': typeof ApiPublicHooksWeeklyRecapRoute
-  '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -180,7 +170,6 @@ export interface FileRouteTypes {
     | '/briefing/$id'
     | '/api/public/hooks/ingest-briefings'
     | '/api/public/hooks/weekly-recap'
-    | '/api/public/payments/webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -197,7 +186,6 @@ export interface FileRouteTypes {
     | '/briefing/$id'
     | '/api/public/hooks/ingest-briefings'
     | '/api/public/hooks/weekly-recap'
-    | '/api/public/payments/webhook'
   id:
     | '__root__'
     | '/'
@@ -215,7 +203,6 @@ export interface FileRouteTypes {
     | '/_authenticated/briefing/$id'
     | '/api/public/hooks/ingest-briefings'
     | '/api/public/hooks/weekly-recap'
-    | '/api/public/payments/webhook'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -228,7 +215,6 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   ApiPublicHooksIngestBriefingsRoute: typeof ApiPublicHooksIngestBriefingsRoute
   ApiPublicHooksWeeklyRecapRoute: typeof ApiPublicHooksWeeklyRecapRoute
-  ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -324,13 +310,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedBriefingIdRouteImport
       parentRoute: typeof AuthenticatedBriefingRoute
     }
-    '/api/public/payments/webhook': {
-      id: '/api/public/payments/webhook'
-      path: '/api/public/payments/webhook'
-      fullPath: '/api/public/payments/webhook'
-      preLoaderRoute: typeof ApiPublicPaymentsWebhookRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/public/hooks/weekly-recap': {
       id: '/api/public/hooks/weekly-recap'
       path: '/api/public/hooks/weekly-recap'
@@ -390,7 +369,6 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   ApiPublicHooksIngestBriefingsRoute: ApiPublicHooksIngestBriefingsRoute,
   ApiPublicHooksWeeklyRecapRoute: ApiPublicHooksWeeklyRecapRoute,
-  ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
