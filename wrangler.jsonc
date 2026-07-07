@@ -3,5 +3,11 @@
   "name": "tanstack-start-app",
   "compatibility_date": "2025-09-24",
   "compatibility_flags": ["nodejs_compat"],
-  "main": "src/server.ts",
+  // Deploy the Vite-built SSR worker (virtual imports already resolved), not
+  // src/server.ts — wrangler cannot resolve TanStack's #tanstack-* virtual
+  // imports when it re-bundles source. `dist` is built in CI before deploy.
+  "main": "dist/server/server.js",
+  "assets": {
+    "directory": "dist/client"
+  }
 }
