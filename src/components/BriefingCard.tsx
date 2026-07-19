@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 import {
   AlertTriangle,
   Clock,
@@ -11,6 +12,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toggleSaveBriefing, type FeedBriefing } from "@/lib/feed.functions";
+import { useSubscription } from "@/hooks/useSubscription";
 
 const severityClass: Record<string, string> = {
   low: "bg-[color:var(--threat-low)]/15 text-[color:var(--threat-low)] border-[color:var(--threat-low)]/40",
@@ -39,13 +41,29 @@ export function BriefingCard({
 }) {
   const qc = useQueryClient();
   const fn = useServerFn(toggleSaveBriefing);
+  const { data: sub } = useSubscription();
+  const pro = sub?.pro ?? false;
+  const [showUpsell, setShowUpsell] = useState(false);
+
   const m = useMutation({
     mutationFn: (save: boolean) => fn({ data: { id: b.id, save } }),
-    onSuccess: () => {
+    onSuccess: (result) => {
+      if (!result.ok) {
+        setShowUpsell(true);
+        return;
+      }
       qc.invalidateQueries({ queryKey: ["feed"] });
       qc.invalidateQueries({ queryKey: ["saved"] });
     },
   });
+
+  function handleSaveClick() {
+    if (!b.saved && !pro) {
+      setShowUpsell(true);
+      return;
+    }
+    m.mutate(!b.saved);
+  }
 
   return (
     <article className="relative rounded-xl border border-border bg-card p-5 shadow-card hover:border-primary/40 transition-colors">
@@ -93,13 +111,34 @@ export function BriefingCard({
           size="sm"
           variant="ghost"
           className="ml-auto"
-          onClick={() => m.mutate(!b.saved)}
+          onClick={handleSaveClick}
           disabled={m.isPending}
-          aria-label={b.saved ? "Unsave" : "Save"}
+          aria-label={b.saved ? "Unsave" : pro ? "Save" : "Save (Pro feature)"}
         >
           {b.saved ? <BookmarkCheck className="h-4 w-4 text-primary" /> : <Bookmark className="h-4 w-4" />}
         </Button>
       </div>
+
+      {showUpsell && (
+        <div className="mt-3 flex items-center justify-between gap-2 rounded-lg border border-primary/30 bg-primary/5 px-3 py-2 text-xs">
+          <span>Saving is a Pro feature.</span>
+          <div className="flex items-center gap-2">
+            <Link to="/pricing">
+              <Button size="sm" className="h-7 bg-gradient-accent text-primary-foreground shadow-glow">
+                Upgrade to Pro
+              </Button>
+            </Link>
+            <button
+              type="button"
+              onClick={() => setShowUpsell(false)}
+              className="text-muted-foreground hover:text-foreground"
+              aria-label="Dismiss"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      )}
 
       {locked && (
         <div className="absolute inset-0 rounded-xl bg-background/85 backdrop-blur-sm grid place-items-center text-center px-6">

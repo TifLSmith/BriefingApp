@@ -118,15 +118,20 @@ export const getBriefingById = createServerFn({ method: "POST" })
     return { briefing: briefing as FeedBriefing, locked, pro, saved: !!savedRow };
   });
 
+export type ToggleSaveResult = { ok: true } | { ok: false; reason: "pro_required" };
+
 export const toggleSaveBriefing = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data: { id: string; save: boolean }) => {
     if (!/^[0-9a-f-]{36}$/i.test(data.id)) throw new Error("Invalid id");
     return data;
   })
-  .handler(async ({ data, context }) => {
+  .handler(async ({ data, context }): Promise<ToggleSaveResult> => {
     const { supabase, userId } = context;
     if (data.save) {
+      const pro = await userIsPro(userId, "live");
+      if (!pro) return { ok: false, reason: "pro_required" };
+
       const { error } = await supabase
         .from("saved_briefings")
         .insert({ user_id: userId, briefing_id: data.id });
