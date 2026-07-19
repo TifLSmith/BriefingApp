@@ -41,7 +41,10 @@ export function BriefingCard({
   const fn = useServerFn(toggleSaveBriefing);
   const m = useMutation({
     mutationFn: (save: boolean) => fn({ data: { id: b.id, save } }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["feed"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["feed"] });
+      qc.invalidateQueries({ queryKey: ["saved"] });
+    },
   });
 
   return (

@@ -87,6 +87,12 @@ Moving off Lovable, in this order. Do NOT skip ahead or combine phases without a
 - In-app billing (StoreKit + Google Play Billing) is NOT built yet. There is currently
   no working payment path. That's expected; don't try to "fix" it unprompted.
 
+## Known issues (tracked, not fixed)
+- **`toggleSaveBriefing` has no Pro check.** `src/lib/feed.functions.ts` — any signed-in
+  user can save any briefing they can read, regardless of Pro status. If saving is meant
+  to be a Pro-only feature, this needs a deliberate fix in a dedicated session — don't
+  patch it as a side effect of unrelated work.
+
 ## Security conventions (learned the hard way — enforce these)
 
 - **Never `select('*')` for paywalled or Pro-only content.** Select only the specific
