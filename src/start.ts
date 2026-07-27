@@ -1,5 +1,5 @@
 import { createStart, createMiddleware } from "@tanstack/react-start";
-// build: force fresh Cloudflare deploy to re-bake VITE_SUPABASE_* env vars
+// build: force fresh Cloudflare deploy (2) — verify build-time VITE_SUPABASE_* vars now bake in
 
 import { renderErrorPage } from "./lib/error-page";
 import { attachSupabaseAuth } from "@/integrations/supabase/auth-attacher";
