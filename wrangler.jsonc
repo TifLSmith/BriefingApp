@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "briefingappv2",
+  "name": "cbrief",
   "compatibility_date": "2025-09-24",
   "compatibility_flags": ["nodejs_compat"],
   // Deploy the Vite-built SSR worker (virtual imports already resolved), not
