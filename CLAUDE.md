@@ -30,15 +30,18 @@ This file is read at the start of every Claude Code session. Follow it exactly.
 
 ## Backend — handle with extra care
 
-The backend currently runs on **Lovable Cloud (a managed Supabase instance)**, NOT a
-Supabase project I control directly. Key facts:
+The backend has migrated off Lovable Cloud onto **my own Supabase project**
+(`wandpuahadqnnjtktgee`). Lovable's own project (`qzxbmcelkfcrlbzvvxdc`) still exists
+separately and currently serves the live `apecbrief.lovable.app` deployment — do not
+confuse the two project IDs. Key facts:
 
-- Auth runs through the **Lovable auth broker** (email/password + Google OAuth). This
-  is a middleman that will NOT exist after migration — repointing auth is the most
-  delicate part of any migration and must never be changed without explicit approval.
-- The AI rewriting uses a **Lovable AI Gateway** via `LOVABLE_API_KEY`. This also will
-  not exist after migration and must be repointed to a direct provider (Anthropic or
-  OpenAI) as a deliberate, approved step.
+- Auth now runs through **my own Supabase project's auth** (not the Lovable broker).
+  Repointing auth is still the most delicate kind of backend change and must never be
+  changed without explicit approval.
+- The AI rewriting uses **Anthropic directly** via `ANTHROPIC_API_KEY`
+  (`@anthropic-ai/sdk`, model `claude-haiku-4-5`), repointed from the Lovable AI
+  Gateway. Call sites: `src/lib/briefings.functions.ts` and
+  `src/routes/api/public/hooks/weekly-recap.ts`.
 - Database tables: `profiles`, `briefing_cache`, `story_sources`, `briefing_runs`,
   `weekly_recaps`, `saved_briefings`, `waitlist_signups`, `subscriptions`.
 - Auth gate: protected routes under `src/routes/_authenticated/`. Bearer-token
@@ -46,26 +49,27 @@ Supabase project I control directly. Key facts:
   user. `supabaseAdmin` (service role) is loaded dynamically for privileged ops only.
 
 ### Hard guardrails for the backend
-- **Do NOT assume Lovable can be cancelled.** The backend depends on it. Never suggest
-  or take steps that would break the live backend.
-- **Do NOT rewire auth, the auth broker, or OAuth** without me explicitly asking and
+- **Do NOT assume Lovable can be cancelled.** The live `apecbrief.lovable.app`
+  deployment still runs on Lovable's own project. Never suggest or take steps that
+  would break it.
+- **Do NOT rewire auth, or OAuth configuration,** without me explicitly asking and
   approving a plan first.
-- **Do NOT touch the AI Gateway wiring** without explicit approval.
+- **Do NOT touch the auth or Anthropic API wiring** without explicit approval.
 
 ## Migration goals (the reason we're here)
 
 Moving off Lovable, in this order. Do NOT skip ahead or combine phases without asking.
 
-1. **Frontend → Cloudflare** (easy, low-risk, do first). Backend stays on Lovable Cloud
-   during this. Goal: remove the "Edit with Lovable" badge and enable a custom domain.
-2. **Backend → my own Supabase account** (separate, careful session). My own Supabase
-   account exists and is connected to GitHub. Migrate schema (already in repo
-   migrations), RLS, triggers, then user accounts. Do this while user count is low.
-3. **Repoint auth** from the Lovable broker to my own Supabase; reconfigure Google OAuth
-   (new client ID, secret, redirect URLs) against the new project.
-4. **Repoint the AI Gateway** from `LOVABLE_API_KEY` to a direct Anthropic/OpenAI key.
-5. **Verify everything end-to-end** on the new stack.
-6. **Only then** cancel Lovable. Not before.
+1. **Frontend → Cloudflare** (easy, low-risk, do first). Goal: remove the "Edit with
+   Lovable" badge and enable a custom domain. Status not confirmed as of this edit.
+2. **Backend → my own Supabase account** — done. Schema, RLS, triggers, and user
+   accounts live on `wandpuahadqnnjtktgee`.
+3. **Repoint auth** from the Lovable broker to my own Supabase — done.
+4. **Repoint the AI Gateway** from `LOVABLE_API_KEY` to a direct Anthropic key — done
+   (`ANTHROPIC_API_KEY`, `claude-haiku-4-5`).
+5. **Verify everything end-to-end** on the new stack. Not yet confirmed complete.
+6. **Only then** cancel Lovable. Not before — the live `apecbrief.lovable.app`
+   deployment still runs on Lovable's own project (`qzxbmcelkfcrlbzvvxdc`).
 
 ## Known cleanup items
 - **Stripe is fully removed from the source as of this change** — the three npm

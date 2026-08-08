@@ -1,5 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
+import Anthropic from "@anthropic-ai/sdk";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+
+const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 export type Briefing = {
   id: string;
@@ -100,36 +103,25 @@ async function fetchAll(): Promise<RawItem[]> {
 }
 
 async function rewriteWithAI(item: RawItem) {
-  const apiKey = process.env.LOVABLE_API_KEY;
-  if (!apiKey) throw new Error("LOVABLE_API_KEY missing");
+  if (!process.env.ANTHROPIC_API_KEY) throw new Error("ANTHROPIC_API_KEY missing");
 
-  const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: "google/gemini-3-flash-preview",
-      messages: [
-        {
-          role: "system",
-          content:
-            "You are A.P.E. — a cybersecurity translator. Rewrite threat/CVE/breach news for beginners and career-switchers. Clear, jargon-free, plain English. No buzzwords. Speak like a friend explaining the news.",
-        },
-        {
-          role: "user",
-          content: `Original title: ${item.title}\nOriginal summary: ${item.description}\nSource: ${item.source_name}\n\nRewrite this and return ONLY valid JSON with this shape (no markdown, no code fences):\n{"title":"plain-English headline (max 12 words)","summary":"2-3 sentence plain-English explanation of what happened","what_attackers_got":["short bullet"],"what_it_means":"1-2 sentences: here's what this means for you (the everyday reader or small business)","action_items":["short imperative action"],"hackers_moved_through":["short bullet"],"hackers_obtained":["short bullet"],"hackers_impacted":["short bullet"],"exploit_path":["short bullet"],"severity":"low|medium|high|critical"}\n\nRules:\n- what_attackers_got: 2-5 short bullets listing data/access stolen (or [] if not a breach).\n- action_items: 2-4 short imperative steps the reader should take.\n- hackers_moved_through: 1-3 bullets on HOW attackers got in / pivoted (initial access, lateral movement). Empty [] for non-breach stories.\n- hackers_obtained: 1-3 bullets on WHAT they took (data, creds, access). Empty [] for non-breach stories.\n- hackers_impacted: 1-3 bullets on WHO/WHAT was affected and the downstream damage. Empty [] for non-breach stories.\n- exploit_path: 1-3 bullets describing HOW the vulnerability could be exploited. Fill ONLY for CVE/advisory/vuln stories where no actual breach happened. Empty [] for actual breaches.\n- Keep each bullet under 14 words. Plain English, no jargon.`,
-        },
-      ],
-    }),
+  const message = await anthropic.messages.create({
+    model: "claude-haiku-4-5",
+    max_tokens: 1024,
+    system:
+      "You are A.P.E. — a cybersecurity translator. Rewrite threat/CVE/breach news for beginners and career-switchers. Clear, jargon-free, plain English. No buzzwords. Speak like a friend explaining the news.",
+    messages: [
+      {
+        role: "user",
+        content: `Original title: ${item.title}\nOriginal summary: ${item.description}\nSource: ${item.source_name}\n\nRewrite this and return ONLY valid JSON with this shape (no markdown, no code fences):\n{"title":"plain-English headline (max 12 words)","summary":"2-3 sentence plain-English explanation of what happened","what_attackers_got":["short bullet"],"what_it_means":"1-2 sentences: here's what this means for you (the everyday reader or small business)","action_items":["short imperative action"],"hackers_moved_through":["short bullet"],"hackers_obtained":["short bullet"],"hackers_impacted":["short bullet"],"exploit_path":["short bullet"],"severity":"low|medium|high|critical"}\n\nRules:\n- what_attackers_got: 2-5 short bullets listing data/access stolen (or [] if not a breach).\n- action_items: 2-4 short imperative steps the reader should take.\n- hackers_moved_through: 1-3 bullets on HOW attackers got in / pivoted (initial access, lateral movement). Empty [] for non-breach stories.\n- hackers_obtained: 1-3 bullets on WHAT they took (data, creds, access). Empty [] for non-breach stories.\n- hackers_impacted: 1-3 bullets on WHO/WHAT was affected and the downstream damage. Empty [] for non-breach stories.\n- exploit_path: 1-3 bullets describing HOW the vulnerability could be exploited. Fill ONLY for CVE/advisory/vuln stories where no actual breach happened. Empty [] for actual breaches.\n- Keep each bullet under 14 words. Plain English, no jargon.`,
+      },
+    ],
   });
 
-  if (!res.ok) {
-    throw new Error(`AI gateway ${res.status}: ${await res.text()}`);
+  let content = "";
+  for (const block of message.content) {
+    if (block.type === "text") content += block.text;
   }
-  const data = await res.json();
-  let content: string = data.choices?.[0]?.message?.content ?? "";
   content = content.replace(/```json\s*/g, "").replace(/```\s*/g, "").trim();
   const parsed = JSON.parse(content);
   const toStringArray = (v: unknown): string[] =>

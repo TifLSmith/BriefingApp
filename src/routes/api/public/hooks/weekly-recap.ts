@@ -1,5 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
+import Anthropic from "@anthropic-ai/sdk";
+
+const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 export const Route = createFileRoute("/api/public/hooks/weekly-recap")({
   server: {
@@ -49,22 +52,20 @@ export const Route = createFileRoute("/api/public/hooks/weekly-recap")({
             return Response.json({ ok: true, skipped: "no stories" });
           }
 
-          const apiKey = process.env.LOVABLE_API_KEY!;
           const prompt = `You are A.P.E. — a cybersecurity translator. Summarize this week in cyber for non-experts.\n\nStories:\n${stories
             .map((s, i) => `${i + 1}. [${s.severity}] ${s.rewritten_title} — ${s.rewritten_summary}`)
             .join("\n")}\n\nReturn JSON ONLY (no code fences):\n{"title":"6-12 word week headline","summary":"1-2 sentence overview of the week","body":"5-8 bullet points of what mattered, plain English, each on a new line starting with '• '"}`;
 
-          const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-            method: "POST",
-            headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-            body: JSON.stringify({
-              model: "google/gemini-3-flash-preview",
-              messages: [{ role: "user", content: prompt }],
-            }),
+          const message = await anthropic.messages.create({
+            model: "claude-haiku-4-5",
+            max_tokens: 1024,
+            messages: [{ role: "user", content: prompt }],
           });
-          if (!res.ok) throw new Error(`AI ${res.status}`);
-          const data = await res.json();
-          let content: string = data.choices?.[0]?.message?.content ?? "";
+
+          let content = "";
+          for (const block of message.content) {
+            if (block.type === "text") content += block.text;
+          }
           content = content.replace(/```json\s*/g, "").replace(/```\s*/g, "").trim();
           const parsed = JSON.parse(content);
 
