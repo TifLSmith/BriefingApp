@@ -2,7 +2,7 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "cbrief",
   "compatibility_date": "2025-09-24",
-  "compatibility_flags": ["nodejs_compat"],
+  "compatibility_flags": ["nodejs_compat", "nodejs_compat_populate_process_env"],
   // Deploy the Vite-built SSR worker (virtual imports already resolved), not
   // src/server.ts — wrangler cannot resolve TanStack's #tanstack-* virtual
   // imports when it re-bundles source. `dist` is built in CI before deploy.
