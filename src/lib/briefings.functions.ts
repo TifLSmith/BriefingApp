@@ -1,4 +1,3 @@
-import { createServerFn } from "@tanstack/react-start";
 import Anthropic from "@anthropic-ai/sdk";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
@@ -244,7 +243,7 @@ async function backfillMissingFields() {
   }
 }
 
-export const getBriefings = createServerFn({ method: "GET" }).handler(async () => {
+export async function getBriefings() {
   try {
     await ensureFreshCache();
     await backfillMissingFields();
@@ -274,4 +273,4 @@ export const getBriefings = createServerFn({ method: "GET" }).handler(async () =
     locked: ((locked ?? []) as Briefing[]).map((b) => ({ ...b, locked: true })),
     generatedAt: new Date().toISOString(),
   };
-});
+}
